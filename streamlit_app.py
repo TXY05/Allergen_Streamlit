@@ -483,14 +483,29 @@ if run and selected_models:
         ax.grid (True)
         st.pyplot (fig)
 
-        st.subheader ("Indoor Allergen Over Time")
-        fig2, ax2 = plt.subplots (figsize = (10, 5))
+        st.subheader ("Allergen Levels Over Time")
+        fig2, (ax2a, ax2b) = plt.subplots (1, 2, figsize = (16, 5))
+
+        # Indoor Allergen
         for name, curve in indoor_allergen_history.items ():
-            ax2.plot (curve, label = name)
-        ax2.set_xlabel ("Step")
-        ax2.set_ylabel ("Indoor Allergen (µg/m³)")
-        ax2.legend ()
-        ax2.grid (True)
+            ax2a.plot (curve, label = name)
+        ax2a.axhline (y = 25, color = 'green', linestyle = '--', alpha = 0.7, label = 'Target (25 µg/m³)')
+        ax2a.set_xlabel ("Step")
+        ax2a.set_ylabel ("Indoor Allergen (µg/m³)")
+        ax2a.set_title ("Indoor Allergen Concentration")
+        ax2a.legend ()
+        ax2a.grid (True)
+
+        # Outdoor Allergen
+        for name, curve in outdoor_allergen_history.items ():
+            ax2b.plot (curve, label = name)
+        ax2b.set_xlabel ("Step")
+        ax2b.set_ylabel ("Outdoor Allergen (µg/m³)")
+        ax2b.set_title ("Outdoor Allergen Concentration")
+        ax2b.legend ()
+        ax2b.grid (True)
+
+        plt.tight_layout ()
         st.pyplot (fig2)
 
         st.subheader ("Cumulative Energy Consumption Over Time")
