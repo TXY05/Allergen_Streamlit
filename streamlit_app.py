@@ -360,7 +360,7 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
                 ax3.set_xlim (0, steps)
 
                 plt.tight_layout ()
-                st.pyplot (fig)
+                st.pyplot (fig,use_container_width = False)
                 plt.close ()
 
                 st.subheader ("Device Operating Status")
@@ -390,7 +390,7 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
 
                 ax_vac.set_xlabel ("Step")
                 plt.tight_layout ()
-                st.pyplot (fig4)
+                st.pyplot (fig4,use_container_width = False)
 
             with metrics_placeholder.container ():
                 current_time = datetime.now ().strftime ("%Y-%m-%d %H:%M:%S")
