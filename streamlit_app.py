@@ -274,8 +274,8 @@ class AllergenEnvironment(gym.Env):
 # Run evaluation
 # ==========================
 if run and selected_models:
-    results = {}
     indoor_allergen_history = {}
+    results = {}
 
     with st.spinner("Running models..."):
         for name in selected_models:
@@ -340,7 +340,8 @@ if run and selected_models:
     # ==========================
     # Plot indoor allergen
     # ==========================
-    st.subheader ("Indoor Allergen Concentration Over Time")
+    # Indoor allergen plot
+    st.subheader ("Indoor Allergen Over Time")
     fig2, ax2 = plt.subplots (figsize = (10, 5))
     for name, curve in indoor_allergen_history.items ():
         ax2.plot (curve, label = name)
