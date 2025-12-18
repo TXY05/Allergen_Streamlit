@@ -285,10 +285,13 @@ if run and selected_models:
             rewards = []
 
             # Load model
-            if cfg["type"] == "sb3":
-                model = load_sb3(cfg["algo"], cfg["path"])
+            if cfg ["type"] == "sb3":
+                model = load_sb3 (cfg ["algo"], cfg ["path"])
             else:
-                model = load_dqn_pt(cfg["path"])
+                # Get obs and action dimensions from environment
+                obs_size = env.observation_space.shape [0]
+                n_actions = env.action_space.n  # assuming discrete
+                model = load_dqn_pt (cfg ["path"], obs_size, n_actions)
 
             for _ in range(steps):
                 if cfg["type"] == "sb3":
