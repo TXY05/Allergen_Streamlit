@@ -273,6 +273,22 @@ class AllergenEnvironment (gym.Env):
         w_allergen, w_energy = 1, 3
         return reward_allergen * w_allergen + reward_energy * w_energy
 
+# Helper to plot status
+def plot_device_status ( ax, history, index, name, color ):
+    # Extract binary signal for specific device from action_history
+    status = [1 if a [index] == 1 else 0 for a in action_history]
+    steps = np.arange (len (status))
+
+    # Plot 'X' only where status is 1 (ON)
+    on_steps = [i for i, val in enumerate (status) if val == 1]
+    on_vals = [1] * len (on_steps)
+
+    ax.scatter (on_steps, on_vals, marker = 'x', color = color, label = f'{name} ON')
+    ax.set_yticks ([0, 1])
+    ax.set_yticklabels (['OFF', 'ON'])
+    ax.set_ylim (-0.2, 1.2)
+    ax.set_ylabel (name)
+    ax.grid (True, alpha = 0.3)
 
 # ==========================
 # Live visualization function
@@ -366,23 +382,6 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
 
                 st.subheader ("Device Operating Status")
                 fig4, (ax_p, ax_v, ax_vac) = plt.subplots (3, 1, figsize = (10, 8), sharex = True)
-
-                # Helper to plot status
-                def plot_device_status ( ax, history, index, name, color ):
-                    # Extract binary signal for specific device from action_history
-                    status = [1 if a [index] == 1 else 0 for a in action_history]
-                    steps = np.arange (len (status))
-
-                    # Plot 'X' only where status is 1 (ON)
-                    on_steps = [i for i, val in enumerate (status) if val == 1]
-                    on_vals = [1] * len (on_steps)
-
-                    ax.scatter (on_steps, on_vals, marker = 'x', color = color, label = f'{name} ON')
-                    ax.set_yticks ([0, 1])
-                    ax.set_yticklabels (['OFF', 'ON'])
-                    ax.set_ylim (-0.2, 1.2)
-                    ax.set_ylabel (name)
-                    ax.grid (True, alpha = 0.3)
 
                 # Plotting the three devices
                 plot_device_status (ax_p, action_history, 0, "Purifier", "#3498db")
@@ -572,24 +571,8 @@ if run and selected_models:
         st.subheader ("Device Operating Status")
         fig4, (ax_p, ax_v, ax_vac) = plt.subplots (3, 1, figsize = (10, 8), sharex = True)
 
-
-        # Helper to plot status
-        def plot_device_status ( ax, history, index, name, color ):
-            # Extract binary signal for specific device from action_history
-            status = [1 if a [index] == 1 else 0 for a in action_history]
-            steps = np.arange (len (status))
-
-            # Plot 'X' only where status is 1 (ON)
-            on_steps = [i for i, val in enumerate (status) if val == 1]
-            on_vals = [1] * len (on_steps)
-
-            ax.scatter (on_steps, on_vals, marker = 'x', color = color, label = f'{name} ON')
-            ax.set_yticks ([0, 1])
-            ax.set_yticklabels (['OFF', 'ON'])
-            ax.set_ylim (-0.2, 1.2)
-            ax.set_ylabel (name)
-            ax.grid (True, alpha = 0.3)
-
+        st.subheader ("Device Operating Status")
+        fig4, (ax_p, ax_v, ax_vac) = plt.subplots (3, 1, figsize = (10, 8), sharex = True)
 
         # Plotting the three devices
         plot_device_status (ax_p, action_history, 0, "Purifier", "#3498db")
