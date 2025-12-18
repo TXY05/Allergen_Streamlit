@@ -172,8 +172,6 @@ class AllergenEnvironment (gym.Env):
     PARTICLE_FRACTION_IN_FLOW_PATH = 0.7
     DEPOSITION_RATE_OF_PARTICLE = 0.0067
 
-    common_outdoor = np.random.uniform (12, 135, steps)
-
     def __init__ ( self, agent_type = "sb3", dqn_action_space = False ):
         super ().__init__ ()
         self.observation_space = spaces.Box (
@@ -383,10 +381,12 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
                 st.subheader ("Device Operating Status")
                 fig4, (ax_p, ax_v, ax_vac) = plt.subplots (3, 1, figsize = (10, 8), sharex = True)
 
-                # Plotting the three devices
-                plot_device_status (ax_p, action_history, 0, "Purifier", "#3498db")
-                plot_device_status (ax_v, action_history, 1, "Vent", "#e67e22")
-                plot_device_status (ax_vac, action_history, 2, "Vacuum", "#9b59b6")
+                model_to_plot = selected_models [0]
+                history = action_history [model_to_plot]
+
+                plot_device_status (ax_p, history, 0, "Purifier", "#3498db")
+                plot_device_status (ax_v, history, 1, "Vent", "#e67e22")
+                plot_device_status (ax_vac, history, 2, "Vacuum", "#9b59b6")
 
                 ax_vac.set_xlabel ("Step")
                 plt.tight_layout ()
@@ -567,9 +567,6 @@ if run and selected_models:
         ax3.legend ()
         ax3.grid (True)
         st.pyplot (fig3)
-
-        st.subheader ("Device Operating Status")
-        fig4, (ax_p, ax_v, ax_vac) = plt.subplots (3, 1, figsize = (10, 8), sharex = True)
 
         st.subheader ("Device Operating Status")
         fig4, (ax_p, ax_v, ax_vac) = plt.subplots (3, 1, figsize = (10, 8), sharex = True)
