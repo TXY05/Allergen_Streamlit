@@ -299,7 +299,6 @@ if run and selected_models:
                 model_type = "dqn"
 
             # Run simulation
-            # Run simulation
             for _ in range (steps):
                 if model_type == "sb3":
                     action, _ = model.predict (obs, deterministic = True)
@@ -351,6 +350,49 @@ if run and selected_models:
     ax2.grid (True)
     st.pyplot (fig2)
 
+    air_purifier_actions = []
+    ventilation_actions = []
+    vacuum_actions = []
+    rewards_list = []
+    energy_list = []
+    allergen_list = []
+    total_reward = 0
+
+    # Create a container to update info dynamically
+    step_container = st.container ()
+
+    for step in range (steps):
+        # Predict action
+        action, _ = model.predict (obs, deterministic = True)
+        action = (action > 0.5).astype (int)  # Binarize for MultiBinary
+
+        # Save actions
+        air_purifier_actions.append (action [0])
+        ventilation_actions.append (action [1])
+        vacuum_actions.append (action [2])
+
+        # Step environment
+        obs, reward, terminated, truncated, info = env.step (action)
+
+        # Save metrics
+        rewards_list.append (reward)
+        total_reward += reward
+        energy_list.append (obs [3])
+        allergen_list.append (obs [0])
+
+        # ========================
+        # Display step info
+        # ========================
+        with step_container:
+            st.write (f"--- Step {step + 1} ---")
+            st.write (f"Action -> Air Purifier: {action [0]}, Ventilation: {action [1]}, Vacuum: {action [2]}")
+            st.write (f"Reward: {reward:.2f}, Total Reward: {total_reward:.2f}")
+            st.write (f"Indoor Allergen: {obs [0]:.2f}, Energy Used: {obs [3]:.2f}")
+            st.progress ((step + 1) / steps)  # optional progress bar
+
+        if terminated or truncated:
+            st.write ("Episode finished!")
+            break
 
 else:
     st.info("Select models and click Run.")
