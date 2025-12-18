@@ -328,6 +328,10 @@ if run and selected_models:
                     indoor_allergen_history [name] = []
                 indoor_allergen_history [name].append (obs [0])  # obs[0] = indoor allergen
 
+                if name not in energy_history:
+                    energy_history [name] = []
+                energy_history [name].append (np.sum (energy_list))
+
                 if terminated or truncated:
                     obs, _ = env.reset ()
 
@@ -372,41 +376,19 @@ if run and selected_models:
     allergen_list = []
     total_reward = 0
 
-    # Create a container to update info dynamically
-    step_container = st.container ()
+    # ==========================
+    # Plot cumulative energy
+    # ==========================
+    st.subheader ("Cumulative Energy Consumption Over Time")
+    fig3, ax3 = plt.subplots (figsize = (10, 5))
+    for name, curve in energy_history.items ():
+        ax3.plot (curve, label = name)
+    ax3.set_xlabel ("Step")
+    ax3.set_ylabel ("Cumulative Energy (kWh)")
+    ax3.legend ()
+    ax3.grid (True)
+    st.pyplot (fig3)
 
-    for step in range (steps):
-        # Predict action
-        action, _ = model.predict (obs, deterministic = True)
-        action = (action > 0.5).astype (int)  # Binarize for MultiBinary
-
-        # Save actions
-        air_purifier_actions.append (action [0])
-        ventilation_actions.append (action [1])
-        vacuum_actions.append (action [2])
-
-        # Step environment
-        obs, reward, terminated, truncated, info = env.step (action)
-
-        # Save metrics
-        rewards_list.append (reward)
-        total_reward += reward
-        energy_list.append (obs [3])
-        allergen_list.append (obs [0])
-
-        # ========================
-        # Display step info
-        # ========================
-        with step_container:
-            st.write (f"--- Step {step + 1} ---")
-            st.write (f"Action -> Air Purifier: {action [0]}, Ventilation: {action [1]}, Vacuum: {action [2]}")
-            st.write (f"Reward: {reward:.2f}, Total Reward: {total_reward:.2f}")
-            st.write (f"Indoor Allergen: {obs [0]:.2f}, Energy Used: {obs [3]:.2f}")
-            st.progress ((step + 1) / steps)  # optional progress bar
-
-        if terminated or truncated:
-            st.write ("Episode finished!")
-            break
 
 else:
     st.info("Select models and click Run.")
