@@ -373,7 +373,6 @@ if run and selected_models:
     ventilation_actions = []
     vacuum_actions = []
     rewards_list = []
-    energy_list = []
     allergen_list = []
     total_reward = 0
 
@@ -383,12 +382,14 @@ if run and selected_models:
     st.subheader ("Cumulative Energy Consumption Over Time")
     fig3, ax3 = plt.subplots (figsize = (10, 5))
     for name, curve in energy_history.items ():
-        ax3.plot (curve, label = name)
+        cumulative_energy = np.cumsum (curve)  # cumulative sum of energy
+        ax3.plot (cumulative_energy, label = name)
     ax3.set_xlabel ("Step")
     ax3.set_ylabel ("Cumulative Energy (kWh)")
     ax3.legend ()
     ax3.grid (True)
     st.pyplot (fig3)
+
 
 
 else:
