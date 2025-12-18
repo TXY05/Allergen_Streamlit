@@ -331,7 +331,7 @@ if run and selected_models:
 
                 if name not in energy_history:
                     energy_history [name] = []
-                energy_history [name].append (np.sum (energy_list))
+                energy_history [name].append (obs [3])
 
                 if terminated or truncated:
                     obs, _ = env.reset ()
