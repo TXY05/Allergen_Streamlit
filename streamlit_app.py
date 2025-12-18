@@ -288,6 +288,7 @@ class AllergenEnvironment(gym.Env):
 # ==========================
 if run and selected_models:
     indoor_allergen_history = {}
+    energy_history = {}
     results = {}
 
     with st.spinner("Running models..."):
