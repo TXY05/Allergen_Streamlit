@@ -381,12 +381,10 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
                 st.subheader ("Device Operating Status")
                 fig4, (ax_p, ax_v, ax_vac) = plt.subplots (3, 1, figsize = (10, 8), sharex = True)
 
-                model_to_plot = selected_models [0]
-                history = action_history [model_to_plot]
-
-                plot_device_status (ax_p, history, 0, "Purifier", "#3498db")
-                plot_device_status (ax_v, history, 1, "Vent", "#e67e22")
-                plot_device_status (ax_vac, history, 2, "Vacuum", "#9b59b6")
+                # Plotting the three devices
+                plot_device_status (ax_p, action_history, 0, "Purifier", "#3498db")
+                plot_device_status (ax_v, action_history, 1, "Vent", "#e67e22")
+                plot_device_status (ax_vac, action_history, 2, "Vacuum", "#9b59b6")
 
                 ax_vac.set_xlabel ("Step")
                 plt.tight_layout ()
@@ -571,10 +569,12 @@ if run and selected_models:
         st.subheader ("Device Operating Status")
         fig4, (ax_p, ax_v, ax_vac) = plt.subplots (3, 1, figsize = (10, 8), sharex = True)
 
-        # Plotting the three devices
-        plot_device_status (ax_p, action_history, 0, "Purifier", "#3498db")
-        plot_device_status (ax_v, action_history, 1, "Vent", "#e67e22")
-        plot_device_status (ax_vac, action_history, 2, "Vacuum", "#9b59b6")
+        model_to_plot = selected_models [0]
+        history = action_history [model_to_plot]
+
+        plot_device_status (ax_p, history, 0, "Purifier", "#3498db")
+        plot_device_status (ax_v, history, 1, "Vent", "#e67e22")
+        plot_device_status (ax_vac, history, 2, "Vacuum", "#9b59b6")
 
         ax_vac.set_xlabel ("Step")
         plt.tight_layout ()
