@@ -259,7 +259,7 @@ def dqn_predict(model, obs):
 # =====================================================
 if run and selected_models:
 
-    env = make_env()
+    env = AllergenEnvironment()
     results = {}
 
     with st.spinner("Running models..."):
