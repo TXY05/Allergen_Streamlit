@@ -15,6 +15,10 @@ from stable_baselines3 import A2C, SAC, PPO
 st.set_page_config(page_title="RL Model Comparison", layout="wide")
 st.title("RL Model Comparison Dashboard")
 
+data = torch.load("models/dqn_allergen_model.pt", map_location="cpu")
+print(type(data))
+
+
 # =====================================================
 # Loaders
 # =====================================================
