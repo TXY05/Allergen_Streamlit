@@ -175,7 +175,7 @@ class AllergenEnvironment (gym.Env):
     def __init__ ( self, agent_type = "sb3", dqn_action_space = False ):
         super ().__init__ ()
         self.observation_space = spaces.Box (
-            low = np.array ([12, 12, 0.46, 0, 0], dtype = np.float32),
+            low = np.array ([0, 12, 0.46, 0, 0], dtype = np.float32),
             high = np.array ([300, 135, 50, 50, 1439], dtype = np.float32),
             dtype = np.float32
         )
