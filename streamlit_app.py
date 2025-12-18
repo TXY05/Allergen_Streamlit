@@ -275,6 +275,8 @@ class AllergenEnvironment(gym.Env):
 # ==========================
 if run and selected_models:
     results = {}
+    indoor_allergen_history = {}
+
     with st.spinner("Running models..."):
         for name in selected_models:
             cfg = MODELS[name]
@@ -297,19 +299,25 @@ if run and selected_models:
                 model_type = "dqn"
 
             # Run simulation
-            for _ in range(steps):
+            # Run simulation
+            for _ in range (steps):
                 if model_type == "sb3":
-                    action, _ = model.predict(obs, deterministic=True)
+                    action, _ = model.predict (obs, deterministic = True)
                 elif model_type == "custom_ppo":
-                    action = ppo_predict(actor, obs)
+                    action = ppo_predict (actor, obs)
                 else:
-                    action = dqn_predict(model, obs)
+                    action = dqn_predict (model, obs)
 
-                obs, reward, terminated, truncated, _ = env.step(action)
-                rewards.append(reward)
+                obs, reward, terminated, truncated, _ = env.step (action)
+                rewards.append (reward)
+
+                # Store indoor allergen
+                if name not in indoor_allergen_history:
+                    indoor_allergen_history [name] = []
+                indoor_allergen_history [name].append (obs [0])  # obs[0] = indoor allergen
 
                 if terminated or truncated:
-                    obs, _ = env.reset()
+                    obs, _ = env.reset ()
 
             results[name] = np.cumsum(rewards)
 
@@ -329,5 +337,20 @@ if run and selected_models:
     st.subheader("Final Rewards")
     for name, curve in results.items():
         st.write(f"{name}: **{curve[-1]:.2f}**")
+
+    # ==========================
+    # Plot indoor allergen
+    # ==========================
+    st.subheader ("Indoor Allergen Concentration Over Time")
+    fig2, ax2 = plt.subplots (figsize = (10, 5))
+    for name, curve in indoor_allergen_history.items ():
+        ax2.plot (curve, label = name)
+    ax2.set_xlabel ("Step")
+    ax2.set_ylabel ("Indoor Allergen (µg/m³)")
+    ax2.legend ()
+    ax2.grid (True)
+    st.pyplot (fig2)
+
+
 else:
     st.info("Select models and click Run.")
