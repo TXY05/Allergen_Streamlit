@@ -337,7 +337,7 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
 
         if step % update_interval == 0 or step == steps - 1:
             with chart_placeholder.container ():
-                fig, (ax1, ax2, ax3) = plt.subplots (3, 1, figsize = (8, 9))
+                fig, (ax1, ax2, ax3) = plt.subplots (3, 1, figsize = (8, 9),dpi=80)
 
                 ax1.plot (allergen_history, color = '#ff6b6b', linewidth = 2)
                 ax1.axhline (y = 25, color = 'green', linestyle = '--', label = 'Target (25 µg/m³)')
@@ -360,11 +360,11 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
                 ax3.set_xlim (0, steps)
 
                 plt.tight_layout ()
-                st.pyplot (fig,use_container_width = False)
+                st.pyplot (fig)
                 plt.close ()
 
                 st.subheader ("Device Operating Status")
-                fig4, (ax_p, ax_v, ax_vac) = plt.subplots (3, 1, figsize = (10, 8), sharex = True)
+                fig4, (ax_p, ax_v, ax_vac) = plt.subplots (3, 1, figsize = (10, 8), sharex = True,dpi=80)
 
                 # Helper to plot status
                 def plot_device_status ( ax, history, index, name, color ):
@@ -390,7 +390,7 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
 
                 ax_vac.set_xlabel ("Step")
                 plt.tight_layout ()
-                st.pyplot (fig4,use_container_width = False)
+                st.pyplot (fig4)
 
             with metrics_placeholder.container ():
                 current_time = datetime.now ().strftime ("%Y-%m-%d %H:%M:%S")
