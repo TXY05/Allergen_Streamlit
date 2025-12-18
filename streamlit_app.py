@@ -471,6 +471,7 @@ if run and selected_models:
         outdoor_allergen_history = {}
         energy_history = {}
         results = {}
+        action_history = {}
 
         common_outdoor = random.uniform (12, 135)
 
@@ -514,6 +515,7 @@ if run and selected_models:
 
                     indoor_allergen_history.setdefault (name, []).append (obs [0])
                     outdoor_allergen_history.setdefault (name, []).append (obs [1])
+                    action_history.setdefault (name, []).append (action[:3])
                     energy_history.setdefault (name, []).append (obs [3])
 
                     if terminated or truncated:
