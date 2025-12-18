@@ -84,10 +84,10 @@ MODELS = {
         "algo": "SAC",
         "path": "models/best_sac_model.zip",
     },
-    "PPO": {
-        "type": "sb3",
-        "algo": "PPO",
-        "path": "models/ppo.zip",
+    "PPO (Custom)": {  # updated name to reflect custom actor/critic
+        "type": "custom_ppo",
+        "actor_path": "models/ppo_actor.pth",
+        "critic_path": "models/ppo_critic.pth",
     },
     "DQN (PyTorch)": {
         "type": "pt",
@@ -95,6 +95,7 @@ MODELS = {
         "path": "models/dqn_allergen_model.pt",
     },
 }
+
 
 # ==========================
 # Sidebar
