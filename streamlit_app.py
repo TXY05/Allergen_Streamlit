@@ -382,7 +382,7 @@ if run and selected_models:
     st.subheader ("Cumulative Energy Consumption Over Time")
     fig3, ax3 = plt.subplots (figsize = (10, 5))
     for name, curve in energy_history.items ():
-        cumulative_energy = np.cumsum (curve)  # cumulative sum of energy
+        cumulative_energy = np.cumsum (curve)/1000  # cumulative sum of energy
         ax3.plot (cumulative_energy, label = name)
     ax3.set_xlabel ("Step")
     ax3.set_ylabel ("Cumulative Energy (kWh)")
