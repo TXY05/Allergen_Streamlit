@@ -68,7 +68,7 @@ selected_models = st.sidebar.multiselect(
     default=list(MODELS.keys())
 )
 
-steps = st.sidebar.slider("Steps", 50, 1440, 500, 60)
+steps = st.sidebar.slider("Steps", 60, 1440, 1440, 60)
 run = st.sidebar.button("Run")
 
 # =====================================================
