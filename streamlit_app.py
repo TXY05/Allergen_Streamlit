@@ -29,9 +29,25 @@ def load_sb3(model_type, path):
         return PPO.load(path, device="cpu")
     raise ValueError("Unsupported SB3 model")
 
+class DQNNetwork(nn.Module):
+    def __init__(self, state_dim, action_dim):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(state_dim, 128),
+            nn.ReLU(),
+            nn.Linear(128, 128),
+            nn.ReLU(),
+            nn.Linear(128, action_dim),
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
 @st.cache_resource
-def load_dqn_pt(path):
-    model = torch.load(path, map_location="cpu")
+def load_dqn_pt(path, obs_size, n_actions):
+    model = DQNNetwork(obs_size, n_actions)
+    state_dict = torch.load(path, map_location="cpu")
+    model.load_state_dict(state_dict)
     model.eval()
     return model
 
