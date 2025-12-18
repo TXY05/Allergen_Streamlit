@@ -328,7 +328,7 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
 
         if step % update_interval == 0 or step == steps - 1:
             with chart_placeholder.container ():
-                fig, (ax1, ax2) = plt.subplots (2, 1, figsize = (8, 6))
+                fig, (ax1, ax2, ax3) = plt.subplots (3, 1, figsize = (8, 9))
 
                 ax1.plot (allergen_history, color = '#ff6b6b', linewidth = 2)
                 ax1.axhline (y = 25, color = 'green', linestyle = '--', label = 'Target (25 µg/m³)')
@@ -339,10 +339,16 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
                 ax1.set_xlim (0, steps)
 
                 ax2.plot (np.cumsum (reward_history), color = '#4ecdc4', linewidth = 2)
-                ax2.set_xlabel ('Step', fontsize = 10)
                 ax2.set_ylabel ('Cumulative Reward', fontsize = 10)
                 ax2.grid (True, alpha = 0.3)
                 ax2.set_xlim (0, steps)
+
+                cumulative_energy = np.cumsum (energy_history) / 1000  # Convert to kWh
+                ax3.plot (cumulative_energy, color = '#f39c12', linewidth = 2)
+                ax3.set_xlabel ('Step', fontsize = 10)
+                ax3.set_ylabel ('Cumulative Energy (kWh)', fontsize = 10)
+                ax3.grid (True, alpha = 0.3)
+                ax3.set_xlim (0, steps)
 
                 plt.tight_layout ()
                 st.pyplot (fig)
