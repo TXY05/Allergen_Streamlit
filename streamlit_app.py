@@ -427,6 +427,7 @@ if run and selected_models:
         run_live_simulation (name, cfg, steps, update_interval)
     else:
         indoor_allergen_history = {}
+        outdoor_allergen_history = {}
         energy_history = {}
         results = {}
 
@@ -466,6 +467,7 @@ if run and selected_models:
                     rewards.append (reward)
 
                     indoor_allergen_history.setdefault (name, []).append (obs [0])
+                    outdoor_allergen_history.setdefault (name, []).append (obs [1])
                     energy_history.setdefault (name, []).append (obs [3])
 
                     if terminated or truncated:
