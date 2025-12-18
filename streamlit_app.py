@@ -43,12 +43,23 @@ class DQNNetwork(nn.Module):
         return self.net(x)
 
 @st.cache_resource
-def load_dqn_pt(path, obs_size, n_actions):
-    model = DQNNetwork(obs_size, n_actions)
-    state_dict = torch.load(path, map_location="cpu")
-    model.load_state_dict(state_dict)
-    model.eval()
-    return model
+@st.cache_resource
+def load_dqn_pt(path, obs_size=None, n_actions=None):
+    # Try loading full model
+    try:
+        model = torch.load(path, map_location="cpu")
+        model.eval()
+        return model
+    except Exception:
+        # fallback to state_dict
+        model = DQNNetwork(obs_size, n_actions)
+        state_dict = torch.load(path, map_location="cpu")
+        # Remove 'module.' prefix if exists
+        new_state_dict = {k.replace("module.",""):v for k,v in state_dict.items()}
+        model.load_state_dict(new_state_dict)
+        model.eval()
+        return model
+
 
 # =====================================================
 # Model registry (EDIT PATHS)
