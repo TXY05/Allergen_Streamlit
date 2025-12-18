@@ -206,11 +206,30 @@ class AllergenEnvironment (gym.Env):
 # ==========================
 # DQN predict
 # ==========================
-def dqn_predict ( model, obs ):
-    obs_t = torch.tensor (obs, dtype = torch.float32).unsqueeze (0)
-    with torch.no_grad ():
-        q_values = model (obs_t)
-    return torch.argmax (q_values, dim = 1).item ()
+def dqn_predict(model, obs):
+    """
+    Given a model and observation, return the action vector from ACTION_LIST
+    """
+    ACTION_LIST = np.array ([
+        [0, 0, 0],  # all off
+        [1, 0, 0],  # purifier only
+        [0, 1, 0],  # ventilation only
+        [0, 0, 1],  # vacuum only
+        [1, 1, 0],  # purifier + ventilation
+        [1, 0, 1],  # purifier + vacuum
+        [0, 1, 1],  # ventilation + vacuum
+        [1, 1, 1],  # all on
+    ], dtype = np.int64)
+
+    obs_t = torch.tensor(obs, dtype=torch.float32).unsqueeze(0)
+    with torch.no_grad():
+        q_values = model(obs_t)
+    # choose the index of max Q-value
+    action_idx = torch.argmax(q_values, dim=1).item()
+    # map to actual MultiBinary action
+    action = ACTION_LIST[action_idx]
+    return action
+
 
 
 # ==========================
@@ -219,58 +238,57 @@ def dqn_predict ( model, obs ):
 if run and selected_models:
     results = {}
 
-    with st.spinner ("Running models..."):
+    with st.spinner("Running models..."):
         for name in selected_models:
-            cfg = MODELS [name]
+            cfg = MODELS[name]
 
-            # Use adjusted action space for DQN
-            if cfg ["type"] == "pt":
-                env = AllergenEnvironment (dqn_action_space = True)
-            else:
-                env = AllergenEnvironment (dqn_action_space = False)
-
-            obs, _ = env.reset ()
+            # Create environment
+            env = AllergenEnvironment()  # same env for all
+            obs, _ = env.reset()
             rewards = []
 
             # Load model
-            if cfg ["type"] == "sb3":
-                model = load_sb3 (cfg ["algo"], cfg ["path"])
-            else:
-                obs_size = env.observation_space.shape [0]
-                model = load_dqn_pt (cfg ["path"], obs_size)
+            if cfg["type"] == "sb3":
+                model = load_sb3(cfg["algo"], cfg["path"])
+            else:  # DQN
+                obs_size = env.observation_space.shape[0]
+                model = load_dqn_pt(cfg["path"], obs_size)
 
-            for _ in range (steps):
-                if cfg ["type"] == "sb3":
-                    action, _ = model.predict (obs, deterministic = True)
-                else:
-                    action = dqn_predict (model, obs)
+            # Run simulation
+            for _ in range(steps):
+                if cfg["type"] == "sb3":
+                    action, _ = model.predict(obs, deterministic=True)
+                else:  # DQN
+                    action = dqn_predict(model, obs)  # returns action vector from ACTION_LIST
 
-                obs, reward, terminated, truncated, _ = env.step (action)
-                rewards.append (reward)
+                obs, reward, terminated, truncated, _ = env.step(action)
+                rewards.append(reward)
 
                 if terminated or truncated:
-                    obs, _ = env.reset ()
+                    obs, _ = env.reset()
 
-            results [name] = np.cumsum (rewards)
+            # Store cumulative rewards
+            results[name] = np.cumsum(rewards)
 
     # ==========================
-    # Plot
+    # Plot cumulative reward
     # ==========================
-    st.subheader ("Cumulative Reward Comparison")
-    fig, ax = plt.subplots (figsize = (10, 5))
-    for name, curve in results.items ():
-        ax.plot (curve, label = name)
-    ax.set_xlabel ("Step")
-    ax.set_ylabel ("Cumulative Reward")
-    ax.legend ()
-    ax.grid (True)
-    st.pyplot (fig)
+    st.subheader("Cumulative Reward Comparison")
+    fig, ax = plt.subplots(figsize=(10, 5))
+    for name, curve in results.items():
+        ax.plot(curve, label=name)
+    ax.set_xlabel("Step")
+    ax.set_ylabel("Cumulative Reward")
+    ax.legend()
+    ax.grid(True)
+    st.pyplot(fig)
 
     # ==========================
     # Summary
     # ==========================
-    st.subheader ("Final Rewards")
-    for name, curve in results.items ():
-        st.write (f"{name}: **{curve [-1]:.2f}**")
+    st.subheader("Final Rewards")
+    for name, curve in results.items():
+        st.write(f"{name}: **{curve[-1]:.2f}**")
 else:
-    st.info ("Select models and click Run.")
+    st.info("Select models and click Run.")
+
