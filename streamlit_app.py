@@ -418,7 +418,7 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
                     st.markdown ("<div style='text-align: center; font-size: 60px;'>🌙</div>", unsafe_allow_html = True)
                     st.markdown ("<div style='text-align: center;'>Nighttime</div>", unsafe_allow_html = True)
 
-            time.sleep (0.1)
+            # time.sleep (0.1)
 
         if terminated or truncated:
             obs, _ = env.reset ()
