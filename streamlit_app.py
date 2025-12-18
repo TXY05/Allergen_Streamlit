@@ -488,24 +488,29 @@ if run and selected_models:
         st.subheader ("Allergen Levels Over Time")
         fig2, (ax2a, ax2b) = plt.subplots (1, 2, figsize = (16, 5))
 
-        # Indoor Allergen
-        for name, curve in indoor_allergen_history.items ():
-            ax2a.plot (curve, label = name)
-        ax2a.axhline (y = 25, color = 'green', linestyle = '--', alpha = 0.7, label = 'Target (25 µg/m³)')
-        ax2a.set_xlabel ("Step")
-        ax2a.set_ylabel ("Indoor Allergen (µg/m³)")
-        ax2a.set_title ("Indoor Allergen Concentration")
-        ax2a.legend ()
-        ax2a.grid (True)
+        # Combined Allergen Concentration Graph
+        fig, ax2 = plt.subplots (figsize = (10, 6))
 
-        # Outdoor Allergen
+        # Plot Indoor Allergen
+        for name, curve in indoor_allergen_history.items ():
+            ax2.plot (curve, label = f"Indoor: {name}")
+
+        # Plot Outdoor Allergen (using dashed lines to distinguish)
         for name, curve in outdoor_allergen_history.items ():
-            ax2b.plot (curve, label = name)
-        ax2b.set_xlabel ("Step")
-        ax2b.set_ylabel ("Outdoor Allergen (µg/m³)")
-        ax2b.set_title ("Outdoor Allergen Concentration")
-        ax2b.legend ()
-        ax2b.grid (True)
+            ax2.plot (curve, label = f"Outdoor: {name}", linestyle = '--')
+
+        # Add Target line
+        ax2.axhline (y = 25, color = 'green', linestyle = ':', alpha = 0.7, label = 'Target (25 µg/m³)')
+
+        # Formatting
+        ax2.set_xlabel ("Step")
+        ax2.set_ylabel ("Allergen Concentration (µg/m³)")
+        ax2.set_title ("Indoor and Outdoor Allergen Concentrations")
+        ax2.legend (loc = 'best')
+        ax2.grid (True, linestyle = '--', alpha = 0.6)
+
+        plt.tight_layout ()
+        plt.show ()
 
         plt.tight_layout ()
         st.pyplot (fig2)
