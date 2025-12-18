@@ -172,6 +172,8 @@ class AllergenEnvironment (gym.Env):
     PARTICLE_FRACTION_IN_FLOW_PATH = 0.7
     DEPOSITION_RATE_OF_PARTICLE = 0.0067
 
+    common_outdoor = np.random.uniform (12, 135, steps)
+
     def __init__ ( self, agent_type = "sb3", dqn_action_space = False ):
         super ().__init__ ()
         self.observation_space = spaces.Box (
@@ -278,8 +280,16 @@ class AllergenEnvironment (gym.Env):
 def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
     """Run simulation with live updates"""
 
-    env_type = "SAC" if cfg.get ("algo", "") == "SAC" else cfg ["type"]
+    algo = cfg.get ("algo", "")
+    if algo == "SAC":
+        env_type = "SAC"
+    elif algo == "A2C":
+        env_type = "A2C"
+    else:
+        env_type = cfg ["type"]
+
     env = AllergenEnvironment (agent_type = env_type)
+
     obs, _ = env.reset ()
 
     if cfg ["type"] == "custom_ppo":
@@ -431,13 +441,17 @@ if run and selected_models:
         energy_history = {}
         results = {}
 
+        common_outdoor = random.uniform (12, 135)
+
         with st.spinner ("Running models..."):
             for name in selected_models:
                 cfg = MODELS [name]
 
                 env_type = "SAC" if cfg.get ("algo", "") == "SAC" else cfg ["type"]
                 env = AllergenEnvironment (agent_type = env_type)
-                obs, _ = env.reset ()
+                obs, _ = env.reset()
+                obs[1] = common_outdoor  # set the first step of outdoor allergen
+
                 rewards = []
 
                 if cfg ["type"] == "custom_ppo":
@@ -463,6 +477,7 @@ if run and selected_models:
                     else:
                         action = dqn_predict (model, obs)
 
+                    obs [1] = common_outdoor
                     obs, reward, terminated, truncated, _ = env.step (action)
                     rewards.append (reward)
 
