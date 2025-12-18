@@ -486,31 +486,26 @@ if run and selected_models:
         st.pyplot (fig)
 
         st.subheader ("Allergen Levels Over Time")
-        fig2, (ax2a, ax2b) = plt.subplots (1, 2, figsize = (16, 5))
+        fig2, ax2 = plt.subplots (figsize = (12, 6))
 
-        # Combined Allergen Concentration Graph
-        fig, ax2 = plt.subplots (figsize = (10, 6))
-
-        # Plot Indoor Allergen
+        # Plot Indoor Allergen curves
         for name, curve in indoor_allergen_history.items ():
             ax2.plot (curve, label = f"Indoor: {name}")
 
-        # Plot Outdoor Allergen (using dashed lines to distinguish)
+        # Plot Outdoor Allergen curves
         for name, curve in outdoor_allergen_history.items ():
+            # Using a dashed line to visually distinguish outdoor from indoor
             ax2.plot (curve, label = f"Outdoor: {name}", linestyle = '--')
 
         # Add Target line
         ax2.axhline (y = 25, color = 'green', linestyle = ':', alpha = 0.7, label = 'Target (25 µg/m³)')
 
-        # Formatting
+        # Formatting the single graph
         ax2.set_xlabel ("Step")
         ax2.set_ylabel ("Allergen Concentration (µg/m³)")
-        ax2.set_title ("Indoor and Outdoor Allergen Concentrations")
-        ax2.legend (loc = 'best')
+        ax2.set_title ("Indoor & Outdoor Allergen Concentration")
+        ax2.legend (loc = 'upper right', bbox_to_anchor = (1.15, 1))  # Moved legend slightly outside if it gets crowded
         ax2.grid (True, linestyle = '--', alpha = 0.6)
-
-        plt.tight_layout ()
-        plt.show ()
 
         plt.tight_layout ()
         st.pyplot (fig2)
