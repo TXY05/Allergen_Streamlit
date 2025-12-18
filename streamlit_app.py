@@ -364,6 +364,35 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
                 st.pyplot (fig)
                 plt.close ()
 
+                st.subheader ("Device Operating Status")
+                fig4, (ax_p, ax_v, ax_vac) = plt.subplots (3, 1, figsize = (10, 8), sharex = True)
+
+                # Helper to plot status
+                def plot_device_status ( ax, history, index, name, color ):
+                    # Extract binary signal for specific device from action_history
+                    status = [1 if a [index] == 1 else 0 for a in action_history]
+                    steps = np.arange (len (status))
+
+                    # Plot 'X' only where status is 1 (ON)
+                    on_steps = [i for i, val in enumerate (status) if val == 1]
+                    on_vals = [1] * len (on_steps)
+
+                    ax.scatter (on_steps, on_vals, marker = 'x', color = color, label = f'{name} ON')
+                    ax.set_yticks ([0, 1])
+                    ax.set_yticklabels (['OFF', 'ON'])
+                    ax.set_ylim (-0.2, 1.2)
+                    ax.set_ylabel (name)
+                    ax.grid (True, alpha = 0.3)
+
+                # Plotting the three devices
+                plot_device_status (ax_p, action_history, 0, "Purifier", "#3498db")
+                plot_device_status (ax_v, action_history, 1, "Vent", "#e67e22")
+                plot_device_status (ax_vac, action_history, 2, "Vacuum", "#9b59b6")
+
+                ax_vac.set_xlabel ("Step")
+                plt.tight_layout ()
+                st.pyplot (fig4)
+
             with metrics_placeholder.container ():
                 current_time = datetime.now ().strftime ("%Y-%m-%d %H:%M:%S")
                 minute = int (obs [4])
@@ -418,58 +447,7 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
                     st.markdown ("<div style='text-align: center; font-size: 60px;'>🌙</div>", unsafe_allow_html = True)
                     st.markdown ("<div style='text-align: center;'>Nighttime</div>", unsafe_allow_html = True)
 
-                # Create Layout
-                col_graphs, col_status = st.columns ([3, 1])
 
-                with col_graphs:
-                    st.write ("### 📈 Performance & Device State")
-                    main_chart = st.empty ()
-                    device_chart = st.empty ()
-
-                with col_status:
-                    st.write ("### 🕹️ Live Status")
-                    metrics_area = st.empty ()
-
-                # Data Containers
-                history = {
-                    "allergen": [],
-                    "reward": [],
-                    "purifier": [],
-                    "vent": [],
-                    "vacuum": []
-                }
-
-                for step in range (steps):
-                    # ... [Prediction Logic remains the same] ...
-                    obs, reward, terminated, truncated, _ = env.step (action)
-
-                    # Update Data
-                    history ["allergen"].append (obs [0])
-                    history ["reward"].append (reward)
-                    history ["purifier"].append (int (action [0]))
-                    history ["vent"].append (int (action [1]))
-                    history ["vacuum"].append (int (action [2]))
-
-                    if step % update_interval == 0 or step == steps - 1:
-                        # 1. Main Performance Chart (Allergen)
-                        main_chart.line_chart (history ["allergen"], height = 200)
-
-                        # 2. Device Status Chart (The "X" Marks on a Timeline)
-                        # We stack them by adding offsets so they don't overlap
-                        status_data = {
-                            "Purifier (On/Off)": [x + 2.5 for x in history ["purifier"]],
-                            "Vent (On/Off)": [x + 1.25 for x in history ["vent"]],
-                            "Vacuum (On/Off)": [x for x in history ["vacuum"]]
-                        }
-                        device_chart.line_chart (status_data, height = 200)
-
-                        # 3. Sidebar Metrics with "X" Indicators
-                        with metrics_area.container ():
-                            p, v, vac = action [:3]
-                            st.metric ("Allergen", f"{obs [0]:.1f}")
-                            st.write (f"**Purifier:** {'✅ [X]' if p else '❌ [ ]'}")
-                            st.write (f"**Vent:** {'✅ [X]' if v else '❌ [ ]'}")
-                            st.write (f"**Vacuum:** {'✅ [X]' if vac else '❌ [ ]'}")
 
             time.sleep (0.1)
 
@@ -588,6 +566,37 @@ if run and selected_models:
         ax3.legend ()
         ax3.grid (True)
         st.pyplot (fig3)
+
+        st.subheader ("Device Operating Status")
+        fig4, (ax_p, ax_v, ax_vac) = plt.subplots (3, 1, figsize = (10, 8), sharex = True)
+
+
+        # Helper to plot status
+        def plot_device_status ( ax, history, index, name, color ):
+            # Extract binary signal for specific device from action_history
+            status = [1 if a [index] == 1 else 0 for a in action_history]
+            steps = np.arange (len (status))
+
+            # Plot 'X' only where status is 1 (ON)
+            on_steps = [i for i, val in enumerate (status) if val == 1]
+            on_vals = [1] * len (on_steps)
+
+            ax.scatter (on_steps, on_vals, marker = 'x', color = color, label = f'{name} ON')
+            ax.set_yticks ([0, 1])
+            ax.set_yticklabels (['OFF', 'ON'])
+            ax.set_ylim (-0.2, 1.2)
+            ax.set_ylabel (name)
+            ax.grid (True, alpha = 0.3)
+
+
+        # Plotting the three devices
+        plot_device_status (ax_p, action_history, 0, "Purifier", "#3498db")
+        plot_device_status (ax_v, action_history, 1, "Vent", "#e67e22")
+        plot_device_status (ax_vac, action_history, 2, "Vacuum", "#9b59b6")
+
+        ax_vac.set_xlabel ("Step")
+        plt.tight_layout ()
+        st.pyplot (fig4)
 
 else:
     st.info ("Select models and click Run.")
