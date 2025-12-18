@@ -190,7 +190,20 @@ class AllergenEnvironment(gym.Env):
         self.episode_length = 1440
         self.current_step_in_episode = 0
         self.state = None
-        self.EMISSION_SCHEDULE = [0] * 48
+        self.EMISSION_SCHEDULE = [
+            0, 0, 0, 0,  # 0:00 - 2:00
+            0, 0, 0, 0,  # 2:00 - 4:00
+            0, 0, 0, 0,  # 4:00 - 6:00
+            0, 0, 31, 30,  # 6:00 - 8:00
+            990, 31, 0, 0,  # 8:00 - 10:00
+            0, 0, 0, 31,  # 10:00 - 12:00
+            30, 990, 31, 0,  # 12:00 - 14:00
+            0, 0, 0, 0,  # 14:00 - 16:00
+            0, 0, 0, 31,  # 16:00 - 18:00
+            50, 31, 30, 990,  # 18:00 - 20:00
+            31, 0, 0, 0,  # 20:00 - 22:00
+            0, 0, 0, 0,  # 22:00 - 0:00
+        ]
 
     def allergenConcentrationCalculation(
         self, E, Co, Ci, Qs, Qn, Ql, Qh, eta_s, P, Qf, eta_f, beta, V
