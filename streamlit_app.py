@@ -230,6 +230,52 @@ def dqn_predict(model, obs):
     action = ACTION_LIST[action_idx]
     return action
 
+class ActorNetwork(nn.Module):
+    def __init__(self, state_dim, action_dim):
+        super().__init__()
+        self.fc1 = nn.Linear(state_dim, 128)
+        self.fc2 = nn.Linear(128,128)
+        self.fc3 = nn.Linear(128, action_dim)
+
+    def forward(self, x):
+        x = torch.relu(self.fc1(x))
+        x = torch.relu(self.fc2(x))
+        logits = self.fc3(x)
+        return logits
+
+class CriticNetwork(nn.Module):
+    def __init__(self, state_dim):
+        super().__init__()
+        self.fc1 = nn.Linear(state_dim, 128)
+        self.fc2 = nn.Linear(128,128)
+        self.fc3 = nn.Linear(128,1)
+
+    def forward(self, x):
+        x = torch.relu(self.fc1(x))
+        x = torch.relu(self.fc2(x))
+        value = self.fc3(x)
+        return value
+
+
+@st.cache_resource
+def load_ppo_custom ( actor_path, critic_path, obs_size, action_size ):
+    actor = PPOActor (obs_size, action_size)
+    critic = PPOCritic (obs_size)
+
+    actor.load_state_dict (torch.load (actor_path, map_location = "cpu"))
+    critic.load_state_dict (torch.load (critic_path, map_location = "cpu"))
+
+    actor.eval ()
+    critic.eval ()
+    return actor, critic
+
+def ppo_predict(actor, obs):
+    obs_t = torch.tensor(obs, dtype=torch.float32).unsqueeze(0)
+    with torch.no_grad():
+        probs = actor(obs_t).squeeze(0).numpy()
+    # For MultiBinary action, sample 0/1 from probabilities
+    action = (np.random.rand(len(probs)) < probs).astype(np.int64)
+    return action
 
 
 # ==========================
@@ -248,24 +294,44 @@ if run and selected_models:
             rewards = []
 
             # Load model
-            if cfg["type"] == "sb3":
-                model = load_sb3(cfg["algo"], cfg["path"])
-            else:  # DQN
-                obs_size = env.observation_space.shape[0]
-                model = load_dqn_pt(cfg["path"], obs_size)
+            for name in selected_models:
+                cfg = MODELS [name]
+
+                # Create environment
+                env = AllergenEnvironment ()  # same env for all
+                obs, _ = env.reset ()
+                rewards = []
+
+                # Load model
+                if cfg ["algo"] == "PPO" and cfg ["path"].endswith (".pth"):
+                    # custom PPO actor/critic
+                    obs_size = env.observation_space.shape [0]
+                    action_size = env.action_space.shape [0]
+                    actor, critic = load_ppo_custom ("models/ppo_actor.pth", "models/ppo_critic.pth", obs_size,
+                                                     action_size)
+                    model_type = "custom_ppo"
+                elif cfg ["type"] == "sb3":
+                    model = load_sb3 (cfg ["algo"], cfg ["path"])
+                    model_type = "sb3"
+                else:  # DQN
+                    obs_size = env.observation_space.shape [0]
+                    model = load_dqn_pt (cfg ["path"], obs_size)
+                    model_type = "dqn"
 
             # Run simulation
-            for _ in range(steps):
-                if cfg["type"] == "sb3":
-                    action, _ = model.predict(obs, deterministic=True)
+            for _ in range (steps):
+                if model_type == "sb3":
+                    action, _ = model.predict (obs, deterministic = True)
+                elif model_type == "custom_ppo":
+                    action = ppo_predict (actor, obs)  # returns MultiBinary action
                 else:  # DQN
-                    action = dqn_predict(model, obs)  # returns action vector from ACTION_LIST
+                    action = dqn_predict (model, obs)  # returns action vector from ACTION_LIST
 
-                obs, reward, terminated, truncated, _ = env.step(action)
-                rewards.append(reward)
+                obs, reward, terminated, truncated, _ = env.step (action)
+                rewards.append (reward)
 
                 if terminated or truncated:
-                    obs, _ = env.reset()
+                    obs, _ = env.reset ()
 
             # Store cumulative rewards
             results[name] = np.cumsum(rewards)
