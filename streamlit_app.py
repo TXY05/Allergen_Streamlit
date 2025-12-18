@@ -418,7 +418,60 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
                     st.markdown ("<div style='text-align: center; font-size: 60px;'>🌙</div>", unsafe_allow_html = True)
                     st.markdown ("<div style='text-align: center;'>Nighttime</div>", unsafe_allow_html = True)
 
-            # time.sleep (0.1)
+                # Create Layout
+                col_graphs, col_status = st.columns ([3, 1])
+
+                with col_graphs:
+                    st.write ("### 📈 Performance & Device State")
+                    main_chart = st.empty ()
+                    device_chart = st.empty ()
+
+                with col_status:
+                    st.write ("### 🕹️ Live Status")
+                    metrics_area = st.empty ()
+
+                # Data Containers
+                history = {
+                    "allergen": [],
+                    "reward": [],
+                    "purifier": [],
+                    "vent": [],
+                    "vacuum": []
+                }
+
+                for step in range (steps):
+                    # ... [Prediction Logic remains the same] ...
+                    obs, reward, terminated, truncated, _ = env.step (action)
+
+                    # Update Data
+                    history ["allergen"].append (obs [0])
+                    history ["reward"].append (reward)
+                    history ["purifier"].append (int (action [0]))
+                    history ["vent"].append (int (action [1]))
+                    history ["vacuum"].append (int (action [2]))
+
+                    if step % update_interval == 0 or step == steps - 1:
+                        # 1. Main Performance Chart (Allergen)
+                        main_chart.line_chart (history ["allergen"], height = 200)
+
+                        # 2. Device Status Chart (The "X" Marks on a Timeline)
+                        # We stack them by adding offsets so they don't overlap
+                        status_data = {
+                            "Purifier (On/Off)": [x + 2.5 for x in history ["purifier"]],
+                            "Vent (On/Off)": [x + 1.25 for x in history ["vent"]],
+                            "Vacuum (On/Off)": [x for x in history ["vacuum"]]
+                        }
+                        device_chart.line_chart (status_data, height = 200)
+
+                        # 3. Sidebar Metrics with "X" Indicators
+                        with metrics_area.container ():
+                            p, v, vac = action [:3]
+                            st.metric ("Allergen", f"{obs [0]:.1f}")
+                            st.write (f"**Purifier:** {'✅ [X]' if p else '❌ [ ]'}")
+                            st.write (f"**Vent:** {'✅ [X]' if v else '❌ [ ]'}")
+                            st.write (f"**Vacuum:** {'✅ [X]' if vac else '❌ [ ]'}")
+
+            time.sleep (0.1)
 
         if terminated or truncated:
             obs, _ = env.reset ()
