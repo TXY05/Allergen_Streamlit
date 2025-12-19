@@ -337,7 +337,7 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
 
         if step % update_interval == 0 or step == steps - 1:
             with chart_placeholder.container ():
-                fig, (ax1, ax2, ax3) = plt.subplots (3, 1, figsize = (8, 9),dpi=40)
+                fig, (ax1, ax2, ax3) = plt.subplots (3, 1, figsize = (8, 9))
 
                 ax1.plot (allergen_history, color = '#ff6b6b', linewidth = 2)
                 ax1.axhline (y = 25, color = 'green', linestyle = '--', label = 'Target (25 µg/m³)')
@@ -364,7 +364,7 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
                 plt.close ()
 
                 st.subheader ("Device Operating Status")
-                fig4, (ax_p, ax_v, ax_vac) = plt.subplots (3, 1, figsize = (10, 8), sharex = True,dpi=40)
+                fig4, (ax_p, ax_v, ax_vac) = plt.subplots (3, 1, figsize = (10, 8), sharex = True)
 
                 # Helper to plot status
                 def plot_device_status ( ax, history, index, name, color ):
@@ -459,6 +459,32 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
 # ==========================
 # Run evaluation
 # ==========================
+def render_env_info_panel(obs, action, reward, energy_history, reward_history, step, steps):
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    minute = int(obs[4])
+    hour = minute // 60
+    minute_of_hour = minute % 60
+
+    purifier, vent, vacuum = action
+
+    st.markdown(f"""
+    ### 📊 Current Status
+    **Time:** `{current_time}`  
+    **Simulation Hour:** `{hour:02d}:{minute_of_hour:02d}`  
+    **Step:** `{step}/{steps}`
+
+    ---
+
+    **Indoor Allergen:** `{obs[0]:.2f}` µg/m³  
+    **Outdoor Allergen:** `{obs[1]:.2f}` µg/m³  
+    **Indoor Dust:** `{obs[2]:.2f}` µg/m³  
+    **Energy (step):** `{obs[3]:.2f}` W  
+    **Cumulative Energy:** `{sum(energy_history) / 1000:.3f}` kWh  
+    **Reward (step):** `{reward:.3f}`  
+    **Cumulative Reward:** `{sum(reward_history):.1f}`
+    """)
+
 if run and selected_models:
     if live_mode:
         name = selected_models [0]
@@ -498,7 +524,11 @@ if run and selected_models:
                     model = load_dqn_pt (cfg ["path"], obs_size)
                     model_type = "dqn"
 
-                for _ in range (steps):
+                last_obs = None
+                last_action = None
+                last_reward = None
+
+                for step_idx in range (steps):
                     if model_type == "sb3":
                         action, _ = model.predict (obs, deterministic = True)
                         if cfg.get ("algo", "") == "SAC":
@@ -510,12 +540,16 @@ if run and selected_models:
 
                     obs [1] = common_outdoor
                     obs, reward, terminated, truncated, _ = env.step (action)
-                    rewards.append (reward)
 
+                    rewards.append (reward)
                     indoor_allergen_history.setdefault (name, []).append (obs [0])
                     outdoor_allergen_history.setdefault (name, []).append (obs [1])
-                    action_history.setdefault (name, []).append (action[:3])
+                    action_history.setdefault (name, []).append (action [:3])
                     energy_history.setdefault (name, []).append (obs [3])
+
+                    last_obs = obs
+                    last_action = action [:3]
+                    last_reward = reward
 
                     if terminated or truncated:
                         obs, _ = env.reset ()
@@ -567,6 +601,23 @@ if run and selected_models:
         ax3.legend ()
         ax3.grid (True)
         st.pyplot (fig3)
+
+        st.subheader ("🧠 Final Environment Status (Non-Live Mode)")
+
+        for name in selected_models:
+            st.markdown (f"## 🔹 {name}")
+
+            render_env_info_panel (
+                obs = last_obs,
+                action = last_action,
+                reward = last_reward,
+                energy_history = energy_history [name],
+                reward_history = results [name],
+                step = len (results [name]),
+                steps = steps
+            )
+
+            st.markdown ("---")
 
 else:
     st.info ("Select models and click Run.")
