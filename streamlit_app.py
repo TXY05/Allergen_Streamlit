@@ -459,7 +459,7 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
 # ==========================
 # Run evaluation
 # ==========================
-def render_env_info_panel(obs,action,reward,energy_history,reward_history,step,steps,mean_indoor,mean_outdoor,mean_dust,mean_energy):
+def render_env_info_panel(obs,action,reward,energy_history,reward_history,step,steps,mean_indoor,mean_outdoor,mean_dust,mean_energy,mean_reward):
 
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -477,6 +477,7 @@ def render_env_info_panel(obs,action,reward,energy_history,reward_history,step,s
     **Cumulative Energy:** `{sum(energy_history) / 1000:.3f}` kWh  
     **Reward (step):** `{reward:.3f}`  
     **Cumulative Reward:** `{reward_history[-1]:.1f}`
+    **Mean Reward (per step):** `{mean_reward:.3f}`
     """)
 
 if run and selected_models:
@@ -486,6 +487,7 @@ if run and selected_models:
         st.subheader (f"🔴 Live Simulation: {name}")
         run_live_simulation (name, cfg, steps, update_interval)
     else:
+        mean_rewards = {}
         indoor_allergen_history = {}
         outdoor_allergen_history = {}
         energy_history = {}
@@ -551,6 +553,7 @@ if run and selected_models:
                         obs, _ = env.reset ()
 
                 results [name] = np.cumsum (rewards)
+                mean_rewards[name] = float(np.mean(rewards))
 
         st.subheader ("Cumulative Reward Comparison")
         fig, ax = plt.subplots (figsize = (10, 5))
@@ -619,7 +622,8 @@ if run and selected_models:
                 mean_indoor = mean_indoor,
                 mean_outdoor = mean_outdoor,
                 mean_dust = mean_dust,
-                mean_energy = mean_energy
+                mean_energy = mean_energy,
+                mean_reward = mean_rewards[name]
             )
 
             st.markdown ("---")
