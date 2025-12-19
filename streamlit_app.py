@@ -476,7 +476,7 @@ def render_env_info_panel(obs,action,reward,energy_history,reward_history,step,s
     **Mean Energy (step):** `{mean_energy:.2f}` W  
     **Cumulative Energy:** `{sum(energy_history) / 1000:.3f}` kWh  
     **Reward (step):** `{reward:.3f}`  
-    **Cumulative Reward:** `{reward_history[-1]:.1f}`
+    **Cumulative Reward:** `{reward_history[-1]:.1f}`  
     **Mean Reward (per step):** `{mean_reward:.3f}`
     """)
 
