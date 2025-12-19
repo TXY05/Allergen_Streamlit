@@ -135,9 +135,9 @@ def dqn_predict ( model, obs ):
 MODELS = {
     "A2C": {"type": "sb3", "algo": "A2C", "path": "models/best_a2c_model.zip"},
     "SAC": {"type": "sb3", "algo": "SAC", "path": "models/best_sac_model.zip"},
-    "PPO (Custom)": {"type": "custom_ppo", "actor_path": "models/ppo_actor.pth",
+    "PPO ": {"type": "custom_ppo", "actor_path": "models/ppo_actor.pth",
                      "critic_path": "models/ppo_critic.pth"},
-    "DQN (PyTorch)": {"type": "pt", "algo": "DQN", "path": "models/dqn_allergen_model.pt"},
+    "DQN ": {"type": "pt", "algo": "DQN", "path": "models/dqn_allergen_model.pt"},
 }
 
 # ==========================
@@ -459,7 +459,8 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
 # ==========================
 # Run evaluation
 # ==========================
-def render_env_info_panel(obs, action, reward, energy_history, reward_history, step, steps):
+def render_env_info_panel(obs,action,reward,energy_history,reward_history,step,steps,mean_indoor,mean_outdoor,mean_dust,mean_energy):
+
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     minute = int(obs[4])
@@ -469,17 +470,10 @@ def render_env_info_panel(obs, action, reward, energy_history, reward_history, s
     purifier, vent, vacuum = action
 
     st.markdown(f"""
-    ### 📊 Current Status
-    **Time:** `{current_time}`  
-    **Simulation Hour:** `{hour:02d}:{minute_of_hour:02d}`  
-    **Step:** `{step}/{steps}`
-
-    ---
-
-    **Indoor Allergen:** `{obs[0]:.2f}` µg/m³  
-    **Outdoor Allergen:** `{obs[1]:.2f}` µg/m³  
-    **Indoor Dust:** `{obs[2]:.2f}` µg/m³  
-    **Energy (step):** `{obs[3]:.2f}` W  
+    **Mean Indoor Allergen:** `{mean_indoor:.2f}` µg/m³  
+    **Mean Outdoor Allergen:** `{mean_outdoor:.2f}` µg/m³  
+    **Mean Dust:** `{mean_dust:.2f}` µg/m³  
+    **Mean Energy (step):** `{mean_energy:.2f}` W  
     **Cumulative Energy:** `{sum(energy_history) / 1000:.3f}` kWh  
     **Reward (step):** `{reward:.3f}`  
     **Cumulative Reward:** `{reward_history[-1]:.1f}`
@@ -495,6 +489,7 @@ if run and selected_models:
         indoor_allergen_history = {}
         outdoor_allergen_history = {}
         energy_history = {}
+        dust_history = {}
         results = {}
         action_history = {}
 
@@ -544,6 +539,7 @@ if run and selected_models:
                     rewards.append (reward)
                     indoor_allergen_history.setdefault (name, []).append (obs [0])
                     outdoor_allergen_history.setdefault (name, []).append (obs [1])
+                    dust_history.setdefault (name, []).append (obs [2])
                     action_history.setdefault (name, []).append (action [:3])
                     energy_history.setdefault (name, []).append (obs [3])
 
@@ -602,10 +598,15 @@ if run and selected_models:
         ax3.grid (True)
         st.pyplot (fig3)
 
-        st.subheader ("🧠 Final Environment Status (Non-Live Mode)")
+        st.subheader ("🧠 Final Environment Status")
 
         for name in selected_models:
             st.markdown (f"## 🔹 {name}")
+
+            mean_indoor = np.mean (indoor_allergen_history [name])
+            mean_outdoor = np.mean (outdoor_allergen_history [name])
+            mean_dust = np.mean (dust_history [name])
+            mean_energy = np.mean (energy_history [name])
 
             render_env_info_panel (
                 obs = last_obs,
@@ -614,7 +615,11 @@ if run and selected_models:
                 energy_history = energy_history [name],
                 reward_history = results [name],
                 step = len (results [name]),
-                steps = steps
+                steps = steps,
+                mean_indoor = mean_indoor,
+                mean_outdoor = mean_outdoor,
+                mean_dust = mean_dust,
+                mean_energy = mean_energy
             )
 
             st.markdown ("---")
