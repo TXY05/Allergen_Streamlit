@@ -10,16 +10,12 @@ from datetime import datetime
 from gymnasium import spaces
 from stable_baselines3 import A2C, SAC, PPO
 
-# ==========================
 # Page setup
-# ==========================
 st.set_page_config (page_title = "RL Model Comparison", layout = "wide")
 st.title ("RL Model Comparison Dashboard")
 
 
-# ==========================
 # Loaders
-# ==========================
 @st.cache_resource
 def load_sb3 ( model_type, path ):
     if model_type == "A2C":
@@ -66,9 +62,6 @@ def load_dqn_pt ( path, obs_size ):
     return model
 
 
-# ==========================
-# Custom PPO
-# ==========================
 class PPOActor (nn.Module):
     def __init__ ( self, state_dim, action_dim ):
         super ().__init__ ()
@@ -114,9 +107,7 @@ def ppo_predict ( actor, obs ):
     return action
 
 
-# ==========================
 # DQN predict
-# ==========================
 def dqn_predict ( model, obs ):
     ACTION_LIST = np.array ([
         [0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1],
@@ -129,9 +120,7 @@ def dqn_predict ( model, obs ):
     return ACTION_LIST [action_idx]
 
 
-# ==========================
 # Model registry
-# ==========================
 MODELS = {
     "A2C": {"type": "sb3", "algo": "A2C", "path": "models/best_a2c_model.zip"},
     "SAC": {"type": "sb3", "algo": "SAC", "path": "models/best_sac_model.zip"},
@@ -140,9 +129,9 @@ MODELS = {
     "DQN ": {"type": "pt", "algo": "DQN", "path": "models/dqn_allergen_model.pt"},
 }
 
-# ==========================
+
 # Sidebar
-# ==========================
+
 st.sidebar.header ("Simulation Settings")
 live_mode = st.sidebar.checkbox ("Live Mode (real-time updates)", value = False)
 selected_models = st.sidebar.multiselect ("Select models", MODELS.keys (), default = list (MODELS.keys ()))
@@ -157,9 +146,9 @@ steps = st.sidebar.slider ("Steps", 60, 1440, 1440, 60)
 run = st.sidebar.button ("Run")
 
 
-# ==========================
+
 # AllergenEnvironment
-# ==========================
+
 class AllergenEnvironment (gym.Env):
     INTERIOR_VOLUME = 68
     MECHANICAL_VENTILATION_FLOW_RATE = 4.2
@@ -273,11 +262,8 @@ class AllergenEnvironment (gym.Env):
 
 
 
-# ==========================
 # Live visualization function
-# ==========================
 def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
-    """Run simulation with live updates"""
 
     algo = cfg.get ("algo", "")
     if algo == "SAC":
@@ -368,7 +354,6 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
 
                 # Helper to plot status
                 def plot_device_status ( ax, history, index, name, color ):
-                    # Extract binary signal for specific device from action_history
                     status = [1 if a [index] == 1 else 0 for a in action_history]
                     steps = np.arange (len (status))
 
@@ -456,9 +441,9 @@ def run_live_simulation ( model_name, cfg, steps, update_interval = 5 ):
     st.success (f"✅ Simulation complete! Final cumulative reward: {sum (reward_history):.1f}")
 
 
-# ==========================
+
 # Run evaluation
-# ==========================
+
 def render_env_info_panel(obs,action,reward,energy_history,reward_history,step,steps,mean_indoor,mean_outdoor,mean_dust,mean_energy,mean_reward):
 
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -580,11 +565,10 @@ if run and selected_models:
         # Add Target line
         ax2.axhline (y = 25, color = 'green', linestyle = ':', alpha = 0.7, label = 'Target (25 µg/m³)')
 
-        # Formatting the single graph
         ax2.set_xlabel ("Step")
         ax2.set_ylabel ("Allergen Concentration (µg/m³)")
         ax2.set_title ("Indoor & Outdoor Allergen Concentration")
-        ax2.legend (loc = 'upper right', bbox_to_anchor = (1.15, 1))  # Moved legend slightly outside if it gets crowded
+        ax2.legend (loc = 'upper right', bbox_to_anchor = (1.15, 1))  
         ax2.grid (True, linestyle = '--', alpha = 0.6)
 
         plt.tight_layout ()
